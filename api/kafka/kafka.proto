@@ -13,6 +13,12 @@ service Kafka {
 
 	// 获取所有的主题
 	rpc GetAllTopics(GetAllTopicsRequest) returns (GetAllTopicsResponse);
+
+	// 发布消息
+	rpc PublicMessage(stream PublicMessageRequest) returns (stream PublicMessageResponse);
+
+	// 订阅消息
+	rpc SubscribeMessage(SubscribeMessageRequest) returns (stream SubscribeMessageResponse);
 }
 
 message CreateTopicRequest {
@@ -42,4 +48,24 @@ message GetAllTopicsResponse {
 
 	uint32 count = 1;
 	repeated Topic topics = 2;
+}
+
+message PublicMessageRequest {
+	string topicName = 1;
+	bytes message = 2;
+}
+
+message PublicMessageResponse {
+	bool isPublic = 1;
+	string message = 2;
+}
+
+message SubscribeMessageRequest {
+	string topicName = 1;
+	uint64 offset = 2;
+}
+
+message SubscribeMessageResponse {
+	bytes message = 1;
+	uint64 offset = 2;
 }

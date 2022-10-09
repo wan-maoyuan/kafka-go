@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package api.kafka;
+
+option go_package = "github.com/wan-maoyuan/kafka-go/api/kafka";
+
+service Kafka {
+	// 创建一个主题
+	rpc CreateTopic(CreateTopicRequest) returns (CreateTopicResponse);
+
+	// 删除一个主题
+	rpc DeleteTopic(DeleteTopicRequest) returns (DeleteTopicResponse);
+
+	// 获取所有的主题
+	rpc GetAllTopics(GetAllTopicsRequest) returns (GetAllTopicsResponse);
+}
+
+message CreateTopicRequest {
+	string topicName = 1;
+}
+
+message CreateTopicResponse {
+	bool isCreated = 1;
+	string message = 2;
+}
+
+message DeleteTopicRequest {
+	string topicName = 1;
+}
+
+message DeleteTopicResponse {
+	bool isDeleted = 1;
+	string message = 2;
+}
+
+message GetAllTopicsRequest {}
+
+message GetAllTopicsResponse {
+	message Topic {
+		string name = 1;
+	}
+
+	uint32 count = 1;
+	repeated Topic topics = 2;
+}

@@ -47,17 +47,29 @@ func (i *index) write(index uint32, offset uint64) error {
 	return nil
 }
 
-func (i *index) read(index uint32) (uint64, error) {
-	if i.size < uint64(index+1)*rowWidth {
-		return 0, io.EOF
+func (i *index) read(index uint32) (offset uint64, err error) {
+	if i.size == 0 || i.size < uint64(index+1)*rowWidth {
+		err = io.EOF
+		return
 	}
 
 	b := make([]byte, offsetWidth)
-	if _, err := i.file.ReadAt(b, int64(uint64(index)*rowWidth+indexWidth)); err != nil {
-		return 0, err
+	if _, err = i.file.ReadAt(b, int64(uint64(index)*rowWidth+indexWidth)); err != nil {
+		return
 	}
 
-	return enc.Uint64(b), nil
+	offset = enc.Uint64(b)
+	return
+}
+
+func (i *index) readLast() (index uint32, err error) {
+	if i.size == 0 {
+		err = io.EOF
+		return
+	}
+
+	index = uint32((i.size / rowWidth) - 1)
+	return
 }
 
 func (i *index) close() error {

@@ -8,6 +8,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"github.com/wan-maoyuan/kafka-go/pkg/server"
+	"github.com/wan-maoyuan/kafka-go/pkg/utils"
 )
 
 var (
@@ -19,6 +20,10 @@ var (
 
 func init() {
 	showVersion()
+
+	if err := utils.InitializeConfig(); err != nil {
+		logrus.Fatalf("init config file error: %v", err)
+	}
 }
 
 func main() {

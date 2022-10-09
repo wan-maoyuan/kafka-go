@@ -1,0 +1,7 @@
+server:
+  grpc_addr: :8080          # grpc 服务启动端口
+
+log:
+  file_path: ./logs         # 日志文件存储路径
+  max_file_size: 1         # 单个日志文件最大体积，单位GB
+  max_file_count: 10        # 日志文件最大个数

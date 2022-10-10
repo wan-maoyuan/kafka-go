@@ -15,7 +15,7 @@ service Kafka {
 	rpc GetAllTopics(GetAllTopicsRequest) returns (GetAllTopicsResponse);
 
 	// 发布消息
-	rpc PublicMessage(stream PublicMessageRequest) returns (stream PublicMessageResponse);
+	rpc PublicMessage(stream PublicMessageRequest) returns (PublicMessageResponse);
 
 	// 订阅消息
 	rpc SubscribeMessage(SubscribeMessageRequest) returns (stream SubscribeMessageResponse);

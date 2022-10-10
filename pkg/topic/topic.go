@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/robfig/cron"
 	"github.com/sirupsen/logrus"
 )
 
@@ -51,17 +50,17 @@ func (t *topic) Delete(name string) {
 	delete(t.topicMap, name)
 }
 
-// 定时将内存中的数据同步到硬盘上
-func (t *topic) CronSync() {
-	c := cron.New()
+// // 定时将内存中的数据同步到硬盘上
+// func (t *topic) CronSync() {
+// 	c := cron.New()
 
-	c.AddFunc("* 5 * * * *", func() { // 每个5分钟同步一次
-		topicSync(t.path, t.topicMap)
-	})
+// 	c.AddFunc("* 5 * * * *", func() { // 每个5分钟同步一次
+// 		topicSync(t.path, t.topicMap)
+// 	})
 
-	c.Start()
-	select {}
-}
+// 	c.Start()
+// 	select {}
+// }
 
 func (t *topic) Close() {
 	topicSync(t.path, t.topicMap)

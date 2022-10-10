@@ -55,7 +55,17 @@ func (s *KafkaService) DeleteTopic(_ context.Context, req *pb.DeleteTopicRequest
 }
 
 func (s *KafkaService) GetAllTopics(_ context.Context, req *pb.GetAllTopicsRequest) (*pb.GetAllTopicsResponse, error) {
-	return nil, nil
+	topics := make([]*pb.GetAllTopicsResponse_Topic, 0)
+	for _, topic := range s.topicCtl.GetAllTopics() {
+		topics = append(topics, &pb.GetAllTopicsResponse_Topic{
+			Name: topic,
+		})
+	}
+
+	return &pb.GetAllTopicsResponse{
+		Count:  uint32(len(topics)),
+		Topics: topics,
+	}, nil
 }
 
 func (s *KafkaService) PublicMessage(svr pb.Kafka_PublicMessageServer) error {

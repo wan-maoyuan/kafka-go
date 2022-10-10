@@ -50,6 +50,15 @@ func (t *Topic) Delete(name string) {
 	delete(t.topicMap, name)
 }
 
+func (t *Topic) GetAllTopics() []string {
+	topics := make([]string, 0, len(t.topicMap))
+	for key := range t.topicMap {
+		topics = append(topics, key)
+	}
+
+	return topics
+}
+
 // // 定时将内存中的数据同步到硬盘上
 // func (t *Topic) CronSync() {
 // 	c := cron.New()

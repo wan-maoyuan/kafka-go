@@ -5,6 +5,10 @@ import (
 	"os"
 )
 
+const (
+	dataLenWidth uint64 = 8
+)
+
 type store struct {
 	file *os.File
 	buf  bufio.Writer
@@ -25,11 +29,25 @@ func newStore(f *os.File) (*store, error) {
 }
 
 func (s *store) write(p []byte) (offset uint64, err error) {
+	offset = s.size
 
-	return 0, nil
+	lenBytes := make([]byte, dataLenWidth)
+	enc.PutUint64(lenBytes, uint64(len(p)))
+	lenBytes = append(lenBytes, p...)
+
+	if _, err = s.buf.Write(lenBytes); err != nil {
+		return
+	}
+
+	return
 }
 
 func (s *store) read(offset uint64) ([]byte, error) {
 
 	return nil, nil
+}
+
+func (s *store) close() error {
+
+	return nil
 }

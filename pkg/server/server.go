@@ -20,8 +20,13 @@ func NewKafkaServer() (*KafkaServer, error) {
 		return nil, fmt.Errorf("creater tcp listener error: %v", err)
 	}
 
+	kaSrv, err := service.NewKafkaService()
+	if err != nil {
+		return nil, fmt.Errorf("creater kafka service error: %v", err)
+	}
+
 	grpcServer := grpc.NewServer()
-	pb.RegisterKafkaServer(grpcServer, &service.KafkaService{})
+	pb.RegisterKafkaServer(grpcServer, kaSrv)
 
 	return &KafkaServer{
 		lis: listener,

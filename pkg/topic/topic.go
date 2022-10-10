@@ -50,7 +50,7 @@ func (t *Topic) Delete(name string) {
 	delete(t.topicMap, name)
 }
 
-func (t *Topic) GetAllTopics() []string {
+func (t *Topic) GetAll() []string {
 	topics := make([]string, 0, len(t.topicMap))
 	for key := range t.topicMap {
 		topics = append(topics, key)
@@ -89,9 +89,6 @@ func topicSync(path string, m map[string]struct{}) {
 	}
 	tmpFile.Close()
 
-	if err := os.Remove(path); err != nil {
-		return
-	}
-
+	os.Remove(path)
 	os.Rename(tmpFile.Name(), path)
 }

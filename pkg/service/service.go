@@ -56,7 +56,7 @@ func (s *KafkaService) DeleteTopic(_ context.Context, req *pb.DeleteTopicRequest
 
 func (s *KafkaService) GetAllTopics(_ context.Context, req *pb.GetAllTopicsRequest) (*pb.GetAllTopicsResponse, error) {
 	topics := make([]*pb.GetAllTopicsResponse_Topic, 0)
-	for _, topic := range s.topicCtl.GetAllTopics() {
+	for _, topic := range s.topicCtl.GetAll() {
 		topics = append(topics, &pb.GetAllTopicsResponse_Topic{
 			Name: topic,
 		})

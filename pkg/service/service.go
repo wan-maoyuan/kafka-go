@@ -7,10 +7,11 @@ import (
 
 	pb "github.com/wan-maoyuan/kafka-go/api/kafka"
 	"github.com/wan-maoyuan/kafka-go/pkg/topic"
+	"github.com/wan-maoyuan/kafka-go/pkg/utils"
 )
 
 var (
-	dataDir       = "./data"
+	dataDir       = utils.C.Log.FilePath
 	topicFilePath = filepath.Join(dataDir, "topic")
 )
 

@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestWrite(t *testing.T) {
+func TestIndexWrite(t *testing.T) {
 	filePath := "./0001.index"
 	os.Remove(filePath)
 
@@ -27,7 +27,7 @@ func TestWrite(t *testing.T) {
 	os.Remove(filePath)
 }
 
-func BenchmarkWrite(b *testing.B) {
+func BenchmarkIndexWrite(b *testing.B) {
 	filePath := "./0001.index"
 	os.Remove(filePath)
 
@@ -51,7 +51,7 @@ func BenchmarkWrite(b *testing.B) {
 	os.Remove(filePath)
 }
 
-func TestRead(t *testing.T) {
+func TestIndexRead(t *testing.T) {
 	filePath := "./0001.index"
 	os.Remove(filePath)
 
@@ -93,7 +93,7 @@ func TestRead(t *testing.T) {
 	os.Remove(filePath)
 }
 
-func BenchmarkRead(b *testing.B) {
+func BenchmarkIndexRead(b *testing.B) {
 	filePath := "./0001.index"
 	os.Remove(filePath)
 

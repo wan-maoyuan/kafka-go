@@ -9,12 +9,12 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type topic struct {
+type Topic struct {
 	path     string
 	topicMap map[string]struct{}
 }
 
-func NewTopic(path string) (*topic, error) {
+func NewTopic(path string) (*Topic, error) {
 	f, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR, 0755)
 	if err != nil {
 		return nil, err
@@ -36,22 +36,22 @@ func NewTopic(path string) (*topic, error) {
 		stop = isPrefix
 	}
 
-	return &topic{
+	return &Topic{
 		path:     f.Name(),
 		topicMap: m,
 	}, nil
 }
 
-func (t *topic) Create(name string) {
+func (t *Topic) Create(name string) {
 	t.topicMap[name] = struct{}{}
 }
 
-func (t *topic) Delete(name string) {
+func (t *Topic) Delete(name string) {
 	delete(t.topicMap, name)
 }
 
 // // 定时将内存中的数据同步到硬盘上
-// func (t *topic) CronSync() {
+// func (t *Topic) CronSync() {
 // 	c := cron.New()
 
 // 	c.AddFunc("* 5 * * * *", func() { // 每个5分钟同步一次
@@ -62,7 +62,7 @@ func (t *topic) Delete(name string) {
 // 	select {}
 // }
 
-func (t *topic) Close() {
+func (t *Topic) Close() {
 	topicSync(t.path, t.topicMap)
 }
 

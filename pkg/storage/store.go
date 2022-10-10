@@ -49,6 +49,10 @@ func (s *store) read(offset uint64) ([]byte, error) {
 		return nil, io.EOF
 	}
 
+	if err := s.buf.Flush(); err != nil {
+		return nil, err
+	}
+
 	lenBytes := make([]byte, dataLenWidth)
 	if _, err := s.file.ReadAt(lenBytes, int64(offset)); err != nil {
 		return nil, err

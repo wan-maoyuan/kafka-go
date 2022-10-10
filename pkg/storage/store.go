@@ -2,6 +2,7 @@ package storage
 
 import (
 	"bufio"
+	"io"
 	"os"
 )
 
@@ -31,23 +32,48 @@ func newStore(f *os.File) (*store, error) {
 func (s *store) write(p []byte) (offset uint64, err error) {
 	offset = s.size
 
-	lenBytes := make([]byte, dataLenWidth)
-	enc.PutUint64(lenBytes, uint64(len(p)))
-	lenBytes = append(lenBytes, p...)
+	body := make([]byte, dataLenWidth)
+	enc.PutUint64(body, uint64(len(p)))
+	body = append(body, p...)
 
-	if _, err = s.buf.Write(lenBytes); err != nil {
+	if _, err = s.buf.Write(body); err != nil {
 		return
 	}
 
+	s.size += uint64(len(body))
 	return
 }
 
 func (s *store) read(offset uint64) ([]byte, error) {
+	if s.size < offset+dataLenWidth {
+		return nil, io.EOF
+	}
 
-	return nil, nil
+	lenBytes := make([]byte, dataLenWidth)
+	if _, err := s.file.ReadAt(lenBytes, int64(offset)); err != nil {
+		return nil, err
+	}
+
+	if s.size < (offset + dataLenWidth + enc.Uint64(lenBytes)) {
+		return nil, io.EOF
+	}
+
+	data := make([]byte, enc.Uint64(lenBytes))
+	if _, err := s.file.ReadAt(data, int64(offset+dataLenWidth)); err != nil {
+		return nil, err
+	}
+
+	return data, nil
 }
 
 func (s *store) close() error {
+	if err := s.buf.Flush(); err != nil {
+		return err
+	}
+
+	if err := s.file.Close(); err != nil {
+		return err
+	}
 
 	return nil
 }

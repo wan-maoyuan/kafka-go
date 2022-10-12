@@ -52,7 +52,7 @@ message GetAllTopicsResponse {
 
 message PublicMessageRequest {
 	string topicName = 1;
-	bytes message = 2;
+	bytes data = 2;
 }
 
 message PublicMessageResponse {
@@ -66,6 +66,6 @@ message SubscribeMessageRequest {
 }
 
 message SubscribeMessageResponse {
-	bytes message = 1;
+	bytes data = 1;
 	uint64 offset = 2;
 }

@@ -10,24 +10,19 @@ import (
 	"github.com/wan-maoyuan/kafka-go/pkg/utils"
 )
 
-var (
-	dataDir       = utils.C.Log.FilePath
-	topicFilePath = filepath.Join(dataDir, "topic")
-)
-
 type KafkaService struct {
 	pb.UnimplementedKafkaServer
 	topicCtl *topic.Topic
 }
 
 func init() {
-	if _, err := os.Stat(dataDir); err != nil {
-		os.Mkdir(dataDir, 0755)
+	if _, err := os.Stat(utils.C.Log.FilePath); err != nil {
+		os.Mkdir(utils.C.Log.FilePath, 0755)
 	}
 }
 
 func NewKafkaService() (*KafkaService, error) {
-	t, err := topic.NewTopic(topicFilePath)
+	t, err := topic.NewTopic(filepath.Join(utils.C.Log.FilePath, "topic"))
 	if err != nil {
 		return nil, err
 	}
@@ -70,6 +65,13 @@ func (s *KafkaService) GetAllTopics(_ context.Context, req *pb.GetAllTopicsReque
 }
 
 func (s *KafkaService) PublicMessage(svr pb.Kafka_PublicMessageServer) error {
+	// for {
+	// 	resp, err := svr.Recv()
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// }
+
 	return nil
 }
 

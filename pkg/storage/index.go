@@ -22,15 +22,20 @@ type index struct {
 	size uint64
 }
 
-func newIndex(f *os.File) (*index, error) {
-	fileInfo, err := os.Stat(f.Name())
+func newIndex(path string) (*index, error) {
+	f, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR, 0644)
+	if err != nil {
+		return nil, err
+	}
+
+	info, err := f.Stat()
 	if err != nil {
 		return nil, err
 	}
 
 	return &index{
 		file: f,
-		size: uint64(fileInfo.Size()),
+		size: uint64(info.Size()),
 	}, nil
 }
 
@@ -73,6 +78,8 @@ func (i *index) readLast() (index uint32, err error) {
 }
 
 func (i *index) close() error {
+	defer i.file.Close()
+
 	if err := i.file.Sync(); err != nil {
 		return err
 	}

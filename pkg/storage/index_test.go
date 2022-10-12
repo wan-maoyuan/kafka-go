@@ -9,12 +9,7 @@ func TestIndexWrite(t *testing.T) {
 	filePath := "./0001.index"
 	os.Remove(filePath)
 
-	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_RDWR, 0644)
-	if err != nil {
-		t.Fatalf("open index file error: %v", err)
-	}
-
-	i, err := newIndex(file)
+	i, err := newIndex(filePath)
 	if err != nil {
 		t.Fatalf("new index error: %v", err)
 	}
@@ -31,12 +26,7 @@ func BenchmarkIndexWrite(b *testing.B) {
 	filePath := "./0001.index"
 	os.Remove(filePath)
 
-	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_RDWR, 0644)
-	if err != nil {
-		b.Fatalf("open index file error: %v", err)
-	}
-
-	i, err := newIndex(file)
+	i, err := newIndex(filePath)
 	if err != nil {
 		b.Fatalf("new index error: %v", err)
 	}
@@ -55,12 +45,7 @@ func TestIndexRead(t *testing.T) {
 	filePath := "./0001.index"
 	os.Remove(filePath)
 
-	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_RDWR, 0644)
-	if err != nil {
-		t.Fatalf("open index file error: %v", err)
-	}
-
-	i, err := newIndex(file)
+	i, err := newIndex(filePath)
 	if err != nil {
 		t.Fatalf("new index error: %v", err)
 	}
@@ -97,12 +82,7 @@ func BenchmarkIndexRead(b *testing.B) {
 	filePath := "./0001.index"
 	os.Remove(filePath)
 
-	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_RDWR, 0644)
-	if err != nil {
-		b.Fatalf("open index file error: %v", err)
-	}
-
-	i, err := newIndex(file)
+	i, err := newIndex(filePath)
 	if err != nil {
 		b.Fatalf("new index error: %v", err)
 	}

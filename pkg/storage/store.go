@@ -16,8 +16,13 @@ type store struct {
 	size uint64
 }
 
-func newStore(f *os.File) (*store, error) {
-	fileInfo, err := os.Stat(f.Name())
+func newStore(path string) (*store, error) {
+	f, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR, 0644)
+	if err != nil {
+		return nil, err
+	}
+
+	info, err := f.Stat()
 	if err != nil {
 		return nil, err
 	}
@@ -25,7 +30,7 @@ func newStore(f *os.File) (*store, error) {
 	return &store{
 		file: f,
 		buf:  *bufio.NewWriter(f),
-		size: uint64(fileInfo.Size()),
+		size: uint64(info.Size()),
 	}, nil
 }
 
@@ -71,11 +76,9 @@ func (s *store) read(offset uint64) ([]byte, error) {
 }
 
 func (s *store) close() error {
-	if err := s.buf.Flush(); err != nil {
-		return err
-	}
+	defer s.file.Close()
 
-	if err := s.file.Close(); err != nil {
+	if err := s.buf.Flush(); err != nil {
 		return err
 	}
 

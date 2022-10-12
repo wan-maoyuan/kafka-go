@@ -6,15 +6,10 @@ import (
 )
 
 func TestStoreWrite(t *testing.T) {
-	os.Remove("./test.store")
+	path := "./test.store"
+	os.Remove(path)
 
-	file, err := os.OpenFile("./test.store", os.O_CREATE|os.O_RDWR, 0644)
-	if err != nil {
-		t.Errorf("open file error: %v", err)
-		return
-	}
-
-	s, err := newStore(file)
+	s, err := newStore(path)
 	if err != nil {
 		t.Errorf("new store error: %v", err)
 		return
@@ -37,19 +32,14 @@ func TestStoreWrite(t *testing.T) {
 		t.Error("store data not equal get data")
 	}
 
-	os.Remove("./test.store")
+	os.Remove(path)
 }
 
 func BenchmarkWrite(b *testing.B) {
-	os.Remove("./test.store")
+	path := "./test.store"
+	os.Remove(path)
 
-	file, err := os.OpenFile("./test.store", os.O_CREATE|os.O_RDWR, 0644)
-	if err != nil {
-		b.Errorf("open file error: %v", err)
-		return
-	}
-
-	s, err := newStore(file)
+	s, err := newStore(path)
 	if err != nil {
 		b.Errorf("new store error: %v", err)
 		return
@@ -64,19 +54,14 @@ func BenchmarkWrite(b *testing.B) {
 		}
 	}
 
-	os.Remove("./test.store")
+	os.Remove(path)
 }
 
 func BenchmarkStoreRead(b *testing.B) {
-	os.Remove("./test.store")
+	path := "./test.store"
+	os.Remove(path)
 
-	file, err := os.OpenFile("./test.store", os.O_CREATE|os.O_RDWR, 0644)
-	if err != nil {
-		b.Errorf("open file error: %v", err)
-		return
-	}
-
-	s, err := newStore(file)
+	s, err := newStore(path)
 	if err != nil {
 		b.Errorf("new store error: %v", err)
 		return
@@ -101,5 +86,5 @@ func BenchmarkStoreRead(b *testing.B) {
 		}
 	}
 
-	os.Remove("./test.store")
+	os.Remove(path)
 }

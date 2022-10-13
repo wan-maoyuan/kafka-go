@@ -38,5 +38,4 @@ func (client *GRPCClient) publicMessage() {
 			return
 		}
 	}
-
 }

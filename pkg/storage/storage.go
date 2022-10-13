@@ -12,9 +12,8 @@ import (
 )
 
 const (
-	messageCacheSize        = 1024     // 消息缓冲区的大小
-	indexSuffix      string = ".index" // 二进制文件索引文件后缀
-	storeSuffix      string = ".store" // 二进制文件后缀
+	indexSuffix string = ".index" // 二进制文件索引文件后缀
+	storeSuffix string = ".store" // 二进制文件后缀
 )
 
 type Storage struct {
@@ -23,11 +22,10 @@ type Storage struct {
 }
 
 type topicInfo struct {
-	msgChan      chan []byte // 消息发送队列
-	currentCount uint32      // 数据 index 最大值
-	fileName     string      // 存储的文件名，出去后缀
-	idx          *index      // 二进制文件
-	sto          *store      // 二进制文件索引文件
+	currentCount uint32 // 数据 index 最大值
+	fileName     string // 存储的文件名，出去后缀
+	idx          *index // 二进制文件
+	sto          *store // 二进制文件索引文件
 }
 
 func NewSorage() (*Storage, error) {
@@ -93,7 +91,6 @@ func (s *Storage) initTopicFolder(topicName string) error {
 	}
 
 	s.sm[topicName] = &topicInfo{
-		msgChan:      make(chan []byte, messageCacheSize),
 		currentCount: 0,
 		fileName:     fileName,
 		idx:          idx,
@@ -147,7 +144,6 @@ func getTopicBinaryInfo(topics map[string]struct{}) (map[string]*topicInfo, erro
 		}
 
 		var info = topicInfo{
-			msgChan:      make(chan []byte, messageCacheSize),
 			currentCount: 0,
 			fileName:     strings.Repeat("0", 16),
 		}

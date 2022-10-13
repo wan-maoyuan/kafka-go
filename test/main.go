@@ -10,7 +10,6 @@ func main() {
 	gc := api.GRPCClient{
 		Addr:   "127.0.0.1:8080",
 		Thread: 1,
-		Count:  1,
 	}
 
 	conn, err := grpc.Dial(gc.Addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -18,6 +17,8 @@ func main() {
 		panic("create grpc conn error: " + err.Error())
 	}
 	gc.Conn = conn
+	defer conn.Close()
 
 	gc.TestPublicMessage()
+	gc.TestSubscribeMessage()
 }

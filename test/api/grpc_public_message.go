@@ -11,31 +11,27 @@ import (
 func (client *GRPCClient) TestPublicMessage() {
 	for i := 0; i < client.Thread; i++ {
 		client.Wg.Add(1)
-		go client.publicMessageThread()
+		go client.publicMessage()
 	}
 
 	client.Wg.Wait()
 }
 
-func (client *GRPCClient) publicMessageThread() {
+func (client *GRPCClient) publicMessage() {
 	defer client.Wg.Done()
 
-	for i := 0; i < client.Count; i++ {
-		client.publicMessage()
-	}
-}
-
-func (client *GRPCClient) publicMessage() {
 	c := pb.NewKafkaClient(client.Conn)
 
-	for i := 0; i < 1000; i++ {
+	for i := 0; i < 100000; i++ {
 		_, err := c.PublicMessage(context.Background(), &pb.PublicMessageRequest{
 			TopicName: "big_john",
 			Data:      []byte("hello world" + strconv.Itoa(i)),
 		})
+
 		if err != nil {
 			logrus.Errorf("kafka client public message error: %v", err)
-			return
+			continue
 		}
 	}
+
 }

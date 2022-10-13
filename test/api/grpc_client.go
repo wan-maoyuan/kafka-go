@@ -9,7 +9,6 @@ import (
 type GRPCClient struct {
 	Addr   string
 	Thread int
-	Count  int
 	Wg     sync.WaitGroup
 	Conn   *grpc.ClientConn
 }

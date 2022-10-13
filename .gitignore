@@ -1,4 +1,5 @@
 # 文件
 api/**/*.go
+data/
 
 go.sum

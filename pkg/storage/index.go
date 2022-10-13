@@ -4,6 +4,8 @@ import (
 	"encoding/binary"
 	"io"
 	"os"
+
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -54,12 +56,14 @@ func (i *index) write(index uint32, offset uint64) error {
 
 func (i *index) read(index uint32) (offset uint64, err error) {
 	if i.size == 0 || i.size < uint64(index+1)*rowWidth {
+		logrus.Debugf("index struct read function: index over i.size, index: %d, size: %d", index, i.size)
 		err = io.EOF
 		return
 	}
 
 	b := make([]byte, offsetWidth)
 	if _, err = i.file.ReadAt(b, int64(uint64(index)*rowWidth+indexWidth)); err != nil {
+		logrus.Debug("index struct read function: file readAt: %d error: %v", uint64(index)*rowWidth+indexWidth, err)
 		return
 	}
 

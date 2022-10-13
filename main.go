@@ -27,6 +27,7 @@ func init() {
 }
 
 func main() {
+	logrus.SetLevel(logrus.DebugLevel)
 	svr, err := server.NewKafkaServer()
 	if err != nil {
 		logrus.Fatalf("create kafka server error: %v", err)

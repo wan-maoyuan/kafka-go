@@ -61,9 +61,12 @@ func (s *Storage) SaveMessage(topicName string, message []byte) error {
 }
 
 // 根据主题和消息偏移量获取消息
-func (s *Storage) GetMessage(topicName string, offset uint64) ([]byte, error) {
+func (s *Storage) GetMessage(topicName string, index uint64) ([]byte, error) {
+	if _, ok := s.sm[topicName]; !ok {
+		return nil, fmt.Errorf("topic: %s is not exist", topicName)
+	}
 
-	return nil, nil
+	return s.getMessageFromFile(topicName, index)
 }
 
 // 某个主题删除之后，对应的消息二进制数据也需要删除
@@ -106,6 +109,7 @@ func (s *Storage) saveMessage2File(topicName string, message []byte) error {
 	if err != nil {
 		return fmt.Errorf("Storage write message to store error: %v", err)
 	}
+	logrus.Debugf("storage struct saveMessage2File function: offset: %d", offset)
 
 	if err := info.idx.write(info.currentCount, offset); err != nil {
 		return fmt.Errorf("Storage write message to index error: %v", err)
@@ -113,6 +117,17 @@ func (s *Storage) saveMessage2File(topicName string, message []byte) error {
 
 	info.currentCount += 1
 	return nil
+}
+
+func (s *Storage) getMessageFromFile(topicName string, index uint64) ([]byte, error) {
+	top := s.sm[topicName]
+	offset, err := top.idx.read(uint32(index))
+	if err != nil {
+		return nil, err
+	}
+	logrus.Debugf("storage struct getMessageFromFile function: offset: %d", offset)
+
+	return top.sto.read(offset)
 }
 
 // 读取数据文件夹，将所有的主题读取出来

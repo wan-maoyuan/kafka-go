@@ -69,6 +69,25 @@ func (s *KafkaService) PublicMessage(_ context.Context, req *pb.PublicMessageReq
 }
 
 func (s *KafkaService) SubscribeMessage(req *pb.SubscribeMessageRequest, svr pb.Kafka_SubscribeMessageServer) error {
+	offset := req.Offset
+	for {
+		logrus.Debugf("SubscribeMessage api offset: %d, topic: %s", offset, req.TopicName)
+		msg, err := s.storageManage.GetMessage(req.TopicName, offset)
+		if err != nil {
+			logrus.Errorf("SubscribeMessage api get message error: %v", err)
+			svr.Context().Done()
+			return err
+		}
 
-	return nil
+		if err := svr.Send(&pb.SubscribeMessageResponse{
+			Data:   msg,
+			Offset: offset,
+		}); err != nil {
+			logrus.Errorf("SubscribeMessage api send message error: %v", err)
+			svr.Context().Done()
+			return err
+		}
+
+		offset += 1
+	}
 }

@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -22,11 +23,11 @@ type Storage struct {
 }
 
 type topicInfo struct {
-	msgChan  chan []byte
-	maxCount int64
-	fileName string
-	idx      *index
-	sto      *store
+	msgChan      chan []byte // 消息发送队列
+	currentCount uint32      // 数据 index 最大值
+	fileName     string      // 存储的文件名，出去后缀
+	idx          *index      // 二进制文件
+	sto          *store      // 二进制文件索引文件
 }
 
 func NewSorage() (*Storage, error) {
@@ -48,11 +49,14 @@ func NewSorage() (*Storage, error) {
 
 // 根据主题保存消息数据
 func (s *Storage) SaveMessage(topicName string, message []byte) error {
-	_, ok := s.sm[topicName]
-	if !ok {
-		if err := s.createTopicFolder(topicName); err != nil {
+	if _, ok := s.sm[topicName]; !ok {
+		if err := s.initTopicFolder(topicName); err != nil {
 			return err
 		}
+	}
+
+	if err := s.saveMessage2File(topicName, message); err != nil {
+		return err
 	}
 
 	return nil
@@ -67,13 +71,52 @@ func (s *Storage) GetMessage(topicName string, offset uint64) ([]byte, error) {
 // 某个主题删除之后，对应的消息二进制数据也需要删除
 func (s *Storage) DeleteDataByTopic(topicName string) {}
 
-func (s *Storage) createTopicFolder(topicName string) error {
+func (s *Storage) initTopicFolder(topicName string) error {
 	s.topicMap[topicName] = struct{}{}
+
+	topicDir := filepath.Join(utils.C.Log.FilePath, topicName)
+	os.RemoveAll(topicDir)
+	if err := os.Mkdir(topicDir, 0777); err != nil {
+		return err
+	}
+
+	fileName := fmt.Sprintf("%016d", 0)
+	idx, err := newIndex(filepath.Join(topicDir, fileName+".index"))
+	if err != nil {
+		return fmt.Errorf("topic: %s create index file error: %v", topicName, err)
+	}
+
+	sto, err := newStore(filepath.Join(topicDir, fileName+".store"))
+	if err != nil {
+		idx.close()
+		return fmt.Errorf("create topic: %s store file error: %v", topicName, err)
+	}
+
+	s.sm[topicName] = &topicInfo{
+		msgChan:      make(chan []byte, messageCacheSize),
+		currentCount: 0,
+		fileName:     fileName,
+		idx:          idx,
+		sto:          sto,
+	}
 
 	return nil
 }
 
-func (s *Storage) saveMessage2File() {}
+func (s *Storage) saveMessage2File(topicName string, message []byte) error {
+	info := s.sm[topicName]
+	offset, err := info.sto.write(message)
+	if err != nil {
+		return fmt.Errorf("Storage write message to store error: %v", err)
+	}
+
+	if err := info.idx.write(info.currentCount, offset); err != nil {
+		return fmt.Errorf("Storage write message to index error: %v", err)
+	}
+
+	info.currentCount += 1
+	return nil
+}
 
 // 读取数据文件夹，将所有的主题读取出来
 func getTopicsFromDataDir() (map[string]struct{}, error) {
@@ -104,9 +147,9 @@ func getTopicBinaryInfo(topics map[string]struct{}) (map[string]*topicInfo, erro
 		}
 
 		var info = topicInfo{
-			msgChan:  make(chan []byte, messageCacheSize),
-			maxCount: 0,
-			fileName: strings.Repeat("0", 16),
+			msgChan:      make(chan []byte, messageCacheSize),
+			currentCount: 0,
+			fileName:     strings.Repeat("0", 16),
 		}
 
 		for _, topicFile := range topicFiles {
@@ -114,14 +157,14 @@ func getTopicBinaryInfo(topics map[string]struct{}) (map[string]*topicInfo, erro
 				length := len(topicFile.Name())
 				name := topicFile.Name()[:length-6]
 
-				messageIndex, err := strconv.ParseInt(name, 10, 64)
+				messageIndex, err := strconv.ParseUint(name, 10, 32)
 				if err != nil {
 					logrus.Errorf("convert file name to int error: %v, name: %s", err, name)
 					continue
 				}
 
-				if info.maxCount < messageIndex {
-					info.maxCount = messageIndex
+				if info.currentCount < uint32(messageIndex) {
+					info.currentCount = uint32(messageIndex)
 					info.fileName = name
 				}
 			}
@@ -134,6 +177,9 @@ func getTopicBinaryInfo(topics map[string]struct{}) (map[string]*topicInfo, erro
 			continue
 		}
 		info.idx = i
+		if num, err := info.idx.readLast(); err != nil {
+			info.currentCount = num + 1
+		}
 
 		storePath := filepath.Join(utils.C.Log.FilePath, topic, info.fileName+storeSuffix)
 		s, err := newStore(storePath)

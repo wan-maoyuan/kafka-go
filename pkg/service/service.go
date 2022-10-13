@@ -3,78 +3,72 @@ package service
 import (
 	"context"
 	"os"
-	"path/filepath"
 
+	"github.com/sirupsen/logrus"
 	pb "github.com/wan-maoyuan/kafka-go/api/kafka"
-	"github.com/wan-maoyuan/kafka-go/pkg/topic"
+	"github.com/wan-maoyuan/kafka-go/pkg/storage"
 	"github.com/wan-maoyuan/kafka-go/pkg/utils"
 )
 
 type KafkaService struct {
 	pb.UnimplementedKafkaServer
-	topicCtl *topic.Topic
+	storageManage *storage.Storage
 }
 
-func init() {
+// 初始化数据文件夹，不存在就新建
+func initDataDir() {
 	if _, err := os.Stat(utils.C.Log.FilePath); err != nil {
-		os.Mkdir(utils.C.Log.FilePath, 0755)
+		logrus.Errorf("data dir stat is error: %v", err)
+
+		if err := os.Mkdir(utils.C.Log.FilePath, 0755); err != nil {
+			logrus.Errorf("mkdir data dir error: %v", err)
+		}
 	}
 }
 
 func NewKafkaService() (*KafkaService, error) {
-	t, err := topic.NewTopic(filepath.Join(utils.C.Log.FilePath, "topic"))
+	initDataDir()
+
+	s, err := storage.NewSorage()
 	if err != nil {
 		return nil, err
 	}
 
 	return &KafkaService{
-		topicCtl: t,
+		storageManage: s,
 	}, nil
 }
 
 func (s *KafkaService) CreateTopic(_ context.Context, req *pb.CreateTopicRequest) (*pb.CreateTopicResponse, error) {
-	s.topicCtl.Create(req.TopicName)
 
-	return &pb.CreateTopicResponse{
-		IsCreated: true,
-		Message:   "",
-	}, nil
+	return &pb.CreateTopicResponse{}, nil
 }
 
 func (s *KafkaService) DeleteTopic(_ context.Context, req *pb.DeleteTopicRequest) (*pb.DeleteTopicResponse, error) {
-	s.topicCtl.Delete(req.TopicName)
 
-	return &pb.DeleteTopicResponse{
-		IsDeleted: true,
-		Message:   "",
-	}, nil
+	return &pb.DeleteTopicResponse{}, nil
 }
 
 func (s *KafkaService) GetAllTopics(_ context.Context, req *pb.GetAllTopicsRequest) (*pb.GetAllTopicsResponse, error) {
-	topics := make([]*pb.GetAllTopicsResponse_Topic, 0)
-	for _, topic := range s.topicCtl.GetAll() {
-		topics = append(topics, &pb.GetAllTopicsResponse_Topic{
-			Name: topic,
-		})
+
+	return &pb.GetAllTopicsResponse{}, nil
+}
+
+func (s *KafkaService) PublicMessage(_ context.Context, req *pb.PublicMessageRequest) (*pb.PublicMessageResponse, error) {
+	if err := s.storageManage.SaveMessage(req.TopicName, req.Data); err != nil {
+		return &pb.PublicMessageResponse{
+			IsPublic: false,
+			Message:  err.Error(),
+		}, err
 	}
 
-	return &pb.GetAllTopicsResponse{
-		Count:  uint32(len(topics)),
-		Topics: topics,
+	return &pb.PublicMessageResponse{
+		IsPublic: true,
+		Message:  "",
 	}, nil
 }
 
-func (s *KafkaService) PublicMessage(svr pb.Kafka_PublicMessageServer) error {
-	// for {
-	// 	resp, err := svr.Recv()
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// }
-
-	return nil
-}
-
 func (s *KafkaService) SubscribeMessage(req *pb.SubscribeMessageRequest, svr pb.Kafka_SubscribeMessageServer) error {
+
 	return nil
 }
